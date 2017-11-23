@@ -1,6 +1,6 @@
 import json
 import sys
-import scipy.cluster.vq as cluster
+import scipy.cluster.hierarchy as cluster
 import matplotlib.pyplot as plt
 
 with open(sys.argv[1], 'r') as json_data:
@@ -9,64 +9,111 @@ with open(sys.argv[1], 'r') as json_data:
 with open(sys.argv[2], 'r') as json_data:
     library = json.load(json_data)
 
-train_id = []
-train = []
+Xappid = []
+Xtrain = []
+
+categories = []
+genres = []
+tags = []
 
 features = []
 
-#find all tags
-for entry in data:
-    for tag in data[entry]["tags"]:
-        if tag not in features:
-            features.append(tag)
+#find all feature names for feature vectors
+for instance in data:
+    if "categories" in data[instance]:
+        for category in data[instance]["categories"]:
+            if category["description"] not in categories:
+                categories.append(category["description"])
 
-for entry in data:
-    tags = data[entry]["tags"]
-    entry_features = []
-    for feature in features:
-        if feature in tags:
-            entry_features.append(1.)#tags[feature]+0.)
+    if "genres" in data[instance]:
+        for genre in data[instance]["genres"]:
+            if genre["description"] not in genres:
+                genres.append(genre["description"])
+
+    for tag in data[instance]["tags"]:
+        if tag not in tags:
+            tags.append(tag)
+
+#print( categories )
+#print( genres )
+#print( tags )
+
+#find features in instances
+for instance in data:
+    instance_features = []
+
+    for category in categories:
+        feature = 0.
+        if "categories" in data[instance]:
+            for ic in data[instance]["categories"]:
+                if category == ic["description"]:
+                    feature = 1.
+        instance_features.append(feature)#tags[feature]+0.)
+
+    for genre in genres:
+        feature = 0.
+        if "genres" in data[instance]:
+            for ig in data[instance]["genres"]:
+                if genre == ig["description"]:
+                    feature = 1.
+        instance_features.append(feature)#tags[feature]+0.)
+
+    for tag in tags:
+        if tag in data[instance]["tags"]:
+            instance_features.append(1.)#tags[feature]+0.)
         else:
-            entry_features.append(0.)
+            instance_features.append(0.)
 
-    train_id.append( entry )
-    train.append( entry_features )
+    Xappid.append( instance )
+    Xtrain.append( instance_features )
 
-whitened = cluster.whiten( train )
-codebook, labels = cluster.kmeans2( train, int(len(data)/20) )
+print('clustering')
+Z = cluster.linkage(Xtrain, 'ward')
 
-print( labels )
-print( len(labels))
-print( len(data))
-plt.scatter(whitened[:, 0], whitened[:, 1])
-plt.scatter(codebook[:, 0], codebook[:, 1], c='r')
-#plt.show()
-
-#inverse labels
-group_id = []
-group = []
-
-for label in labels:
-    if label not in group_id:
-        group_id.append(label)
-        group.append([])
-
-print( group_id)
-print( group )
-print( len(group_id))
-
-for i,label in enumerate(labels):
-    group[group_id.index(label)].append( train_id[i] )
-
-print( group)
-
+print( len(Xtrain ))
+print( len(Z ))
 
 liblist = list(library)
-appid = liblist[2]
+libappid = liblist[2]
+libappindex = Xappid.index(libappid)
 
-appindex = train_id.index(appid)
-applabel = labels[appindex]
-groupindex = group_id.index(applabel)
-groupapp = group[groupindex]
-print( appid)
-print( groupapp )
+#find a cluster with of size m from leaf
+leaf = libappindex # starting index
+size = 5 # size of cluster you want
+node = 0 # iterable, index of end cluster
+n = len(Xtrain)
+while(1):
+    if Z[node][0] == leaf or Z[node][1] == leaf:
+        if Z[node][3] < size:
+            leaf = node+n
+        else:
+            break
+    else:
+        node += 1
+#node is now the cluster id in the linkage matrix
+
+#find leaf instances from cluster in linkage matrix
+node = node # starting cluster
+nodes = [node] # intermittent nodes BFS
+leafs = [] # all leafs in clustering
+n = len(Xtrain)
+
+while len(nodes) > 0:
+    left = int( Z[nodes[0]][0] )
+    right = int( Z[nodes[0]][1] )
+    if left < n:
+        leafs.append(left)
+    else:
+        nodes.append(left-n)
+    if right < n:
+        leafs.append(right)
+    else:
+        nodes.append(right-n)
+    nodes.pop(0)
+
+#convert leaf ids to app appids
+appids = []
+for leaf in leafs:
+    appids.append( Xappid[leaf] )
+
+print(appids)
