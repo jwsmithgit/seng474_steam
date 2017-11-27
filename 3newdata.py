@@ -1,17 +1,17 @@
-import json
 import sys
+import json
 
-print( "usage python ./3newdata.py finaldata.json steamspy.json outfile.json" )
+print( "usage python .\\3newdata.py olddata.json newdata.json outfile.json" )
 
 with open(sys.argv[1], 'r') as json_data:
-    data = json.load(json_data)
+    old_data = json.load(json_data)
 
 with open(sys.argv[2], 'r') as json_data:
-    ss_json = json.load(json_data)
+    new_data = json.load(json_data)
 
 missing = ""
-for k in ss_json:
-    if k not in data:
+for k in new_data:
+    if k not in old_data:
         missing += str(k) + '\n'
 
 fout = open(sys.argv[3], 'w')

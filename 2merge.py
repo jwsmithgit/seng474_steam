@@ -1,18 +1,18 @@
-import json
 import sys
+import json
 
-print( "usage python ./2merge.py fromdata.json todata.json outfile.json" )
+print( "usage python .\\2merge.py to_data.json from_data.json outfile.json" )
 
 with open(sys.argv[1], 'r') as json_data:
-    fromdata = json.load(json_data)
+    to_data = json.load(json_data)
 
 with open(sys.argv[2], 'r') as json_data:
-    todata = json.load(json_data)
+    from_data = json.load(json_data)
 
-for kid in fromdata:
-    if kid in todata:
-        for kfield in fromdata[kid]:
-            todata[kid][kfield] = fromdata[kid][kfield]
+for item in from_data:
+    if item in to_data:
+        for value in from_data[item]:
+            to_data[item][value] = from_data[item][value]
 
 with open(sys.argv[3], 'w') as outfile:
-    json.dump(todata, outfile, separators=(',', ':'))
+    json.dump(to_data, outfile, separators=(',', ':'))

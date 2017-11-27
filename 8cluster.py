@@ -3,6 +3,8 @@ import sys
 import scipy.cluster.hierarchy as cluster
 import pickle
 
+print( "usage python .\\8cluster.py data.json" )
+
 with open(sys.argv[1], 'r') as json_data:
     data = json.load(json_data)
 

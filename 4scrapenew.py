@@ -1,41 +1,40 @@
-import requests
-from bs4 import BeautifulSoup
-import json
-import time
 import sys
+import json
+import urllib.request
+import time
 
-print( "usage python ./4scrapemissing.py missing.txt outfile.json" )
+print( "usage python .\\4scrapenew.py newdata.txt outfile.json" )
 
 url_start = "http://store.steampowered.com/api/appdetails?appids="
-url_end = "/?cc=us"
 
 missing_data = {}
 
 f = open(sys.argv[1], 'r')
 for line in f:
-    app_id = line.strip()
-    print(app_id)
+    appid = line.strip()
+    print(appid)
 
     time.sleep(1)
-    result = requests.get(url_start + app_id)# + url_end, cookies=cookies)
-    string_data = result.content.decode("utf-8")
-    #print( string_data )
+    request = urllib.request.Request(url_start + appid)
+    with urllib.request.urlopen(request) as response:
+        url_data = response.read().decode("utf-8")
 
-    while( string_data == "null" or string_data == "" ):
+    while( True ):#url_data == "null" or url_data == "" ):
         time.sleep(60)
-        result = requests.get(url_start + app_id)# + url_end, cookies=cookies)
-        string_data = result.content.decode("utf-8")
-        #print( "retrying" )
+        request = urllib.request.Request(url_start + appid)
+        with urllib.request.urlopen(request) as response:
+            url_data = response.read().decode("utf-8")
+        print( "retrying" )
 
-    colon = string_data.find(':')
-    string_data = string_data[colon+1:-1]
+    colon = url_data.find(':')
+    url_data = url_data[colon+1:-1]
 
-    json_data = json.loads(string_data)
+    json_data = json.loads(url_data)
     if (json_data["success"] == False) :
-        print( "failed on " + app_id )
+        print( "failed on " + appid )
         continue
 
-    missing_data[app_id] = json_data["data"]
+    missing_data[appid] = json_data["data"]
 
 with open(sys.argv[2], 'w') as outfile:
     json.dump(missing_data, outfile, separators=(',', ':'))
