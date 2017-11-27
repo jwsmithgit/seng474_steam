@@ -4,7 +4,7 @@ import json
 import time
 import sys
 
-print( "usage python ./6scrapemissing.py missing.txt outfile.json" )
+print( "usage python ./4scrapemissing.py missing.txt outfile.json" )
 
 url_start = "http://store.steampowered.com/api/appdetails?appids="
 url_end = "/?cc=us"
@@ -19,22 +19,23 @@ for line in f:
     time.sleep(1)
     result = requests.get(url_start + app_id)# + url_end, cookies=cookies)
     string_data = result.content.decode("utf-8")
-    print( string_data )
+    #print( string_data )
 
     while( string_data == "null" or string_data == "" ):
         time.sleep(60)
         result = requests.get(url_start + app_id)# + url_end, cookies=cookies)
         string_data = result.content.decode("utf-8")
-        print( string_data )
+        #print( "retrying" )
 
     colon = string_data.find(':')
     string_data = string_data[colon+1:-1]
 
     json_data = json.loads(string_data)
-    if (json_data["success"] == "failure") :
+    if (json_data["success"] == False) :
+        print( "failed on " + app_id )
         continue
 
-    missing_data[app_id] = json_data
+    missing_data[app_id] = json_data["data"]
 
 with open(sys.argv[2], 'w') as outfile:
-    json.dump(missing_data, outfile)
+    json.dump(missing_data, outfile, separators=(',', ':'))

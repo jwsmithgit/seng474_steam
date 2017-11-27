@@ -1,7 +1,7 @@
 import json
 import sys
 
-print( "usage python ./5missingdata.py finaldata.json newdata.json outfile.json" )
+print( "usage python ./3newdata.py finaldata.json steamspy.json outfile.json" )
 
 with open(sys.argv[1], 'r') as json_data:
     data = json.load(json_data)

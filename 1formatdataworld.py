@@ -17,4 +17,4 @@ jsf = jsf[:-1] + '}'
 jsf = json.loads(jsf)
 
 with open(sys.argv[2], 'w') as outfile:
-    json.dump(jsf, outfile)
+    json.dump(jsf, outfile, separators=(',', ':'))

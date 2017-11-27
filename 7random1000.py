@@ -3,7 +3,7 @@ import random
 import math
 import sys
 
-print( "usage python ./8random1000.py finaldata.json outfile.json" )
+print( "usage python ./9random1000.py finaldata.json outfile.json" )
 
 with open(sys.argv[1], 'r') as json_data:
     fjson = json.load(json_data)
@@ -14,4 +14,4 @@ for i in range(1000):
     new[appid] = fjson[appid]
 
 with open(sys.argv[2], 'w') as outfile:
-    json.dump(new, outfile)
+    json.dump(new, outfile, separators=(',', ':'))

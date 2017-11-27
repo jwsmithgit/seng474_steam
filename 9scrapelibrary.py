@@ -26,4 +26,4 @@ for k in raw_data:
     final_data[app_k] = k
 
 with open(sys.argv[2], 'w') as outfile:
-    json.dump(final_data, outfile)
+    json.dump(final_data, outfile, separators=(',', ':'))

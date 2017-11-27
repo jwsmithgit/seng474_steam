@@ -1,13 +1,10 @@
 import json
 import sys
 import scipy.cluster.hierarchy as cluster
-import matplotlib.pyplot as plt
+import pickle
 
 with open(sys.argv[1], 'r') as json_data:
     data = json.load(json_data)
-
-with open(sys.argv[2], 'r') as json_data:
-    library = json.load(json_data)
 
 Xappid = []
 Xtrain = []
@@ -33,10 +30,6 @@ for instance in data:
     for tag in data[instance]["tags"]:
         if tag not in tags:
             tags.append(tag)
-
-#print( categories )
-#print( genres )
-#print( tags )
 
 #find features in instances
 for instance in data:
@@ -68,52 +61,12 @@ for instance in data:
     Xtrain.append( instance_features )
 
 print('clustering')
-Z = cluster.linkage(Xtrain, 'ward')
+clusterTree = cluster.linkage(Xtrain, 'ward')
 
-print( len(Xtrain ))
-print( len(Z ))
+#notice that the cluster return is never used directly to demo pickle functionality
+#we still need to embed any values we want to use past this point into clusterTree, or write out other objects
+with open('cluster.bin', 'wb') as writefile:
+    pickle.dump(clusterTree, writefile, protocol=2)
 
-liblist = list(library)
-libappid = liblist[2]
-libappindex = Xappid.index(libappid)
-
-#find a cluster with of size m from leaf
-leaf = libappindex # starting index
-size = 5 # size of cluster you want
-node = 0 # iterable, index of end cluster
-n = len(Xtrain)
-while(1):
-    if Z[node][0] == leaf or Z[node][1] == leaf:
-        if Z[node][3] < size:
-            leaf = node+n
-        else:
-            break
-    else:
-        node += 1
-#node is now the cluster id in the linkage matrix
-
-#find leaf instances from cluster in linkage matrix
-node = node # starting cluster
-nodes = [node] # intermittent nodes BFS
-leafs = [] # all leafs in clustering
-n = len(Xtrain)
-
-while len(nodes) > 0:
-    left = int( Z[nodes[0]][0] )
-    right = int( Z[nodes[0]][1] )
-    if left < n:
-        leafs.append(left)
-    else:
-        nodes.append(left-n)
-    if right < n:
-        leafs.append(right)
-    else:
-        nodes.append(right-n)
-    nodes.pop(0)
-
-#convert leaf ids to app appids
-appids = []
-for leaf in leafs:
-    appids.append( Xappid[leaf] )
-
-print(appids)
+with open('appids.bin', 'wb') as writefile:
+    pickle.dump(Xappid, writefile, protocol=2)
