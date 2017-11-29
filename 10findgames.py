@@ -26,7 +26,6 @@ for appid in list(library):
     node = 0 # iterable, index of end cluster
     n = len(Zappids)
     while len(leafs) < size:
-
         #find next cluster with of size m from leaf
         while(1):
             if Z[node][0] == leaf or Z[node][1] == leaf:
@@ -54,10 +53,11 @@ for appid in list(library):
             nodes.pop(0)
 
         #remove leafs from that are in library
-        for i, zi in enumerate(leafs):
-            aid = Zappids[zi]
-            if aid in library:
-                leafs.pop(i)
+        leafs = [x for x in leafs if not Zappids[x] in library]
+
+        if len(leafs) < size:
+            leaf = node+n
+            leafs = []
 
     #convert leaf ids to app appids
     for leaf in leafs:
